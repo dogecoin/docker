@@ -37,7 +37,7 @@ RUN cd /tmp && \
 
 COPY docker-entrypoint.py /usr/local/bin/docker-entrypoint
 
-WORKDIR /${USER}
+WORKDIR ${HOME}
 
 # P2P network (mainnet, testnet & regnet respectively)
 EXPOSE 22556 44556 18444
