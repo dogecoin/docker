@@ -1,4 +1,4 @@
-FROM ubuntu:bionic
+FROM ubuntu:focal
 
 # To improve : static hash make dynamic build of versions impossible.
 ARG VERSION=1.14.4
@@ -37,7 +37,7 @@ RUN cd /tmp && \
 
 COPY docker-entrypoint.py /usr/local/bin/docker-entrypoint
 
-WORKDIR /${USER}
+WORKDIR ${HOME}
 
 # P2P network (mainnet, testnet & regnet respectively)
 EXPOSE 22556 44556 18444
