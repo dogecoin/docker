@@ -6,6 +6,7 @@ import pwd
 import shutil
 import sys
 import subprocess
+import re
 
 def container_executable():
     """
@@ -25,22 +26,35 @@ def container_executable():
 
     return executable
 
+def characters_cleaner(raw_option):
+    """
+    Remove a selection of characters for each extracted option of
+    the executable man page.
+    """
+    char_to_remove = ["\\", "="]
+    for char in char_to_remove:
+        raw_option = raw_option.replace(char, "")
+    return raw_option
+
 def executable_options():
     """
-    Retrieve available options for container executable, using his man.
+    Retrieve available options for container executable, using
+    it's raw man page.
     """
-    raw_options = subprocess.check_output(
-            f"bash -c \"man {EXECUTABLE} | grep '^ *-'\"",
-            shell=True
-            ).decode().strip()
+    man_folder = "/usr/share/man/man1"
+    man_file = os.path.join(man_folder, f"{EXECUTABLE}.1")
 
-    #Cleanup options fields
-    options = []
-    for option_entry in raw_options.split("\n"):
-        option_entry = option_entry.strip().split("=")[0]
-        options.append(option_entry[1:])
+    with open(man_file, "r") as man_filestream:
+        man_content = man_filestream.read()
 
-    return options
+    # Regex to match single option entry in man(1) page
+    # Option entry is near .HP and .IP man tag
+    option_regex = r".HP\n\\fB\\-(.*)=?\\fR"
+    option_list = re.findall(option_regex, man_content)
+
+    # Remove few unexpected characters from man page
+    cleaned_option = map(characters_cleaner, option_list)
+    return list(cleaned_option)
 
 def create_datadir():
     """
