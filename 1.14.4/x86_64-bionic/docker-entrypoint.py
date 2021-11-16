@@ -78,7 +78,8 @@ def create_datadir():
 
 def convert_env():
     """
-    Convert existing environment variables into command line arguments.
+    Convert existing environment variables into command line arguments,
+    remove it from the environment.
 
     Options from executable man pages are searched in the environment,
     converting options in upper case and convert "-" to "_".
@@ -95,7 +96,7 @@ def convert_env():
 
     cli_arguments = []
     for option in dogecoind_options:
-        env_option = os.environ.get(option_to_env(option))
+        env_option = os.environ.pop(option_to_env(option), None)
 
         if env_option is not None:
             cli_option = "-" + option
@@ -128,7 +129,7 @@ def run_executable(executable_args):
     os.setuid(user_info.pw_uid)
 
     #Run process and remove environment by security.
-    os.execve(dogecoin_executable, execve_args, {})
+    os.execve(dogecoin_executable, execve_args, os.environ)
 
 if __name__ == "__main__":
     EXECUTABLE = container_executable()
