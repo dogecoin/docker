@@ -10,7 +10,7 @@
 
 ## Quick reference
 
-- **Maintained by the [Dogecoin community](https://github.com/dogecoin/docker/issues)**
+- **Maintained by the [Dogecoin community](https://github.com/dogecoin/docker/)**
 - **Docker Hub images:** https://hub.docker.com/r/dogecoin/dogecoin
 - **Dogecoin Core repository:** https://github.com/dogecoin/dogecoin
 - **Where to file issues:** https://github.com/dogecoin/docker/issues
