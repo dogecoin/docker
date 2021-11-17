@@ -1,7 +1,10 @@
-Docker images for Dogecoin
--------------------
+<p align="center">
+  <img src="https://static.tumblr.com/ppdj5y9/Ae9mxmxtp/300coin.png" alt="Dogecoin" width="200"/>
+</p>
 
-### Supported tags and respective `Dockerfile` links
+# Docker images for Dogecoin
+
+## Supported tags and respective `Dockerfile` links
 
 - [`1.14.5`,`latest`](#)
 
@@ -14,9 +17,7 @@ Docker images for Dogecoin
 - **Supported architectures:** [...]
 
 ## What is this coin with a Doge on it ?
-<p align="center">
-  <img src="https://static.tumblr.com/ppdj5y9/Ae9mxmxtp/300coin.png" alt="Dogecoin" width="150"/>
-</p>
+
 Dogecoin is a community-driven cryptocurrency that was inspired by a Shiba Inu meme. The Dogecoin Core software allows anyone to operate a node in the Dogecoin blockchain networks and uses the Scrypt hashing method for Proof of Work. It is adapted from Bitcoin Core and other cryptocurrencies.
 
 To get more information about Dogecoin Core, visit the [source code repository](https://github.com/dogecoin/dogecoin).
