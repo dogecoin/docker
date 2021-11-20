@@ -40,7 +40,7 @@ RUN tar -xvf dogecoin-${VERSION}-*.tar.gz --strip-components=1 && \
     chmod 4555 /usr/local/bin/dogecoin* && \
     rm -rf /tmp/*
 
-COPY --chmod=555 docker-entrypoint.py /usr/local/bin/docker-entrypoint
+COPY --chmod=500 docker-entrypoint.py /usr/local/bin/docker-entrypoint
 
 WORKDIR ${HOME}
 
