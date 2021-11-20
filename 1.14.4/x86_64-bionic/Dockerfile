@@ -2,7 +2,7 @@ FROM ubuntu:bionic
 
 # To improve : static hash make dynamic build of versions impossible.
 ARG VERSION=1.14.4
-ARG VERSION_HASH=6266235abe4bcbd41ea57bdf42f11ef89aa69f0386e8c8846d5228af69e7fa13
+ARG TARGETPLATFORM
 
 ENV USER=dogecoin
 ENV DATADIR=/${USER}/.dogecoin
@@ -19,23 +19,28 @@ RUN apt update && apt install -y \
     wget \
     && rm -rf /var/lib/apt/lists/*
 
-# Download Dogecoin Core from github releases.
+# Download Dogecoin Core from github releases,
+# manage binary architecture using buildx & TARGETPLATFORM.
+WORKDIR /tmp
+
+RUN set -ex && \
+    if [ "${TARGETPLATFORM}" = "linux/amd64" ]; then TARGETPLATFORM=x86_64-linux-gnu; fi \
+    && if [ "${TARGETPLATFORM}" = "linux/arm64" ]; then TARGETPLATFORM=aarch64-linux-gnu; fi \
+    && if [ "${TARGETPLATFORM}" = "linux/arm/v7" ]; then TARGETPLATFORM=arm-linux-gnueabihf; fi \
+    && if [ "${TARGETPLATFORM}" = "linux/386" ]; then TARGETPLATFORM=i686-pc-linux-gnu; fi \
+    && wget https://github.com/dogecoin/dogecoin/releases/download/v${VERSION}/dogecoin-${VERSION}-${TARGETPLATFORM}.tar.gz
+
 # Move downloaded binaries and man pages in the container system.
-# Setuid on binaries with $USER rights, to limit root usage.
-#
-# Security: more secure way than check hash for download,
-# see https://github.com/docker-library/official-images#security
-RUN cd /tmp && \
-    wget https://github.com/dogecoin/dogecoin/releases/download/v${VERSION}/dogecoin-${VERSION}-x86_64-linux-gnu.tar.gz && \
-    echo "${VERSION_HASH} dogecoin-${VERSION}-x86_64-linux-gnu.tar.gz" | sha256sum -c && \
-    tar -xvf dogecoin-${VERSION}-x86_64-linux-gnu.tar.gz --strip-components=1 && \
+# Setuid on binaries with $USER rights, to prevent
+# root right with `docker exec`.
+RUN tar -xvf dogecoin-${VERSION}-*.tar.gz --strip-components=1 && \
     cp share/man/man1/*.1 /usr/share/man/man1 && \
     cp bin/dogecoin* /usr/local/bin && \
     chown ${USER}:${USER} /usr/local/bin/dogecoin* && \
     chmod 4555 /usr/local/bin/dogecoin* && \
     rm -rf /tmp/*
 
-COPY docker-entrypoint.py /usr/local/bin/docker-entrypoint
+COPY --chmod=555 docker-entrypoint.py /usr/local/bin/docker-entrypoint
 
 WORKDIR ${HOME}
 
