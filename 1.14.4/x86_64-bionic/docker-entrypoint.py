@@ -36,13 +36,13 @@ def characters_cleaner(raw_option):
         raw_option = raw_option.replace(char, "")
     return raw_option
 
-def executable_options():
+def executable_options(executable):
     """
     Retrieve available options for container executable, using
     it's raw man page.
     """
     man_folder = "/usr/share/man/man1"
-    man_file = os.path.join(man_folder, f"{EXECUTABLE}.1")
+    man_file = os.path.join(man_folder, f"{executable}.1")
 
     with open(man_file, "r") as man_filestream:
         man_content = man_filestream.read()
@@ -76,7 +76,7 @@ def create_datadir():
     user = os.environ["USER"]
     subprocess.run(["chown", "-R", f"{user}:{user}", datadir])
 
-def convert_env():
+def convert_env(executable):
     """
     Convert existing environment variables into command line arguments,
     remove it from the environment.
@@ -91,12 +91,12 @@ def convert_env():
     Environment variables can be used with an empty value if the
     corresponding option do not expect a value.
     """
-    dogecoind_options = executable_options()
+    man_options = executable_options(executable)
     option_to_env = lambda opt_value : opt_value.upper().replace("-", "_")
 
     cli_arguments = []
-    for option in dogecoind_options:
-        env_option = os.environ.pop(option_to_env(option), None)
+    for option in man_options:
+        env_option = os.environ.get(option_to_env(option))
 
         if env_option is not None:
             cli_option = "-" + option
@@ -105,7 +105,7 @@ def convert_env():
 
     return cli_arguments
 
-def run_executable(executable_args):
+def run_executable(executable, executable_args):
     """
     Run selected dogecoin executable with arguments from environment and
     command line. Switch manually from root rights needed at startup
@@ -116,11 +116,11 @@ def run_executable(executable_args):
     signal handling.
     """
     #Prepare execve(2) arguments
-    if EXECUTABLE in ["dogecoind", "dogecoin-qt"]:
+    if executable in ["dogecoind", "dogecoin-qt"]:
         executable_args.append("-printtoconsole")
 
-    dogecoin_executable = shutil.which(EXECUTABLE)
-    execve_args = [dogecoin_executable] + executable_args
+    executable_path = shutil.which(executable)
+    execve_args = [executable_path] + executable_args
 
     #Switch process from root to user.
     #Equivalent to use gosu or su-exec
@@ -129,14 +129,14 @@ def run_executable(executable_args):
     os.setuid(user_info.pw_uid)
 
     #Run process and remove environment by security.
-    os.execve(dogecoin_executable, execve_args, os.environ)
+    os.execve(executable_path, execve_args, os.environ)
 
 if __name__ == "__main__":
-    EXECUTABLE = container_executable()
+    executable = container_executable()
 
     create_datadir()
 
-    EXECUTABLE_ARGS = convert_env()
-    EXECUTABLE_ARGS += sys.argv[1:]
+    executable_args = convert_env(executable)
+    executable_args += sys.argv[1:]
 
-    run_executable(EXECUTABLE_ARGS)
+    run_executable(executable, executable_args)
