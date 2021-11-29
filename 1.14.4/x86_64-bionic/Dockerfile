@@ -2,7 +2,6 @@ FROM ubuntu:bionic
 
 # To improve : static hash make dynamic build of versions impossible.
 ARG VERSION=1.14.4
-ARG TARGETPLATFORM
 
 ENV USER=dogecoin
 ENV DATADIR=/${USER}/.dogecoin
@@ -19,16 +18,15 @@ RUN apt update && apt install -y \
     wget \
     && rm -rf /var/lib/apt/lists/*
 
-# Download Dogecoin Core from github releases,
-# manage binary architecture using buildx & TARGETPLATFORM.
+# Download Dogecoin Core from github releases for cross-architecture
 WORKDIR /tmp
 
-RUN set -ex && \
-    if [ "${TARGETPLATFORM}" = "linux/amd64" ]; then TARGETPLATFORM=x86_64-linux-gnu; fi \
-    && if [ "${TARGETPLATFORM}" = "linux/arm64" ]; then TARGETPLATFORM=aarch64-linux-gnu; fi \
-    && if [ "${TARGETPLATFORM}" = "linux/arm/v7" ]; then TARGETPLATFORM=arm-linux-gnueabihf; fi \
-    && if [ "${TARGETPLATFORM}" = "linux/386" ]; then TARGETPLATFORM=i686-pc-linux-gnu; fi \
-    && wget https://github.com/dogecoin/dogecoin/releases/download/v${VERSION}/dogecoin-${VERSION}-${TARGETPLATFORM}.tar.gz
+RUN set -ex && ARCHITECTURE=$(dpkg --print-architecture) && \
+    if [ "${ARCHITECTURE}" = "amd64" ]; then ARCHITECTURE=x86_64-linux-gnu; fi \
+    && if [ "${ARCHITECTURE}" = "arm64" ]; then ARCHITECTURE=aarch64-linux-gnu; fi \
+    && if [ "${ARCHITECTURE}" = "armhf" ]; then ARCHITECTURE=arm-linux-gnueabihf; fi \
+    && if [ "${ARCHITECTURE}" = "i386" ]; then ARCHITECTURE=i686-pc-linux-gnu; fi \
+    && wget https://github.com/dogecoin/dogecoin/releases/download/v${VERSION}/dogecoin-${VERSION}-${ARCHITECTURE}.tar.gz
 
 # Move downloaded binaries and man pages in the container system.
 # Setuid on binaries with $USER rights, to prevent
@@ -40,7 +38,8 @@ RUN tar -xvf dogecoin-${VERSION}-*.tar.gz --strip-components=1 && \
     chmod 4555 /usr/local/bin/dogecoin* && \
     rm -rf /tmp/*
 
-COPY --chmod=500 docker-entrypoint.py /usr/local/bin/docker-entrypoint
+COPY docker-entrypoint.py /usr/local/bin/docker-entrypoint
+RUN chmod 500 /usr/local/bin/docker-entrypoint
 
 WORKDIR ${HOME}
 
