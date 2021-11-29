@@ -8,23 +8,26 @@ import sys
 import subprocess
 import re
 
-def container_executable():
-    """
-    Get the executable used in the docker command, or
-    use dogecoind by default.
-    """
-    dogecoin_executables = [
-                "dogecoind",
-                "dogecoin-qt",
-                "dogecoin-cli",
-                "dogecoin-tx",
-            ]
+CLI_EXECUTABLES = [
+        "dogecoind",
+        "dogecoin-qt",
+        "dogecoin-cli",
+        "dogecoin-tx",
+        ]
 
-    executable = "dogecoind"
-    if len(sys.argv) >= 2 and sys.argv[1] in dogecoin_executables:
-        executable = sys.argv.pop(1)
+def execute(exectuable, args):
+    """
+    Run container command with execve(2). Use manually execve
+    to run the process as same pid and avoid to fork a child.
+    """
+    executable_path = shutil.which(executable)
 
-    return executable
+    if executable_path is None:
+        exit(f"{sys.argv[0]}: {executable} not found.")
+
+    #Prepare execve args & launch container command
+    execve_args = [executable_path] + args
+    os.execve(executable_path, execve_args, os.environ)
 
 def characters_cleaner(raw_option):
     """
@@ -115,12 +118,8 @@ def run_executable(executable, executable_args):
     to manage a single process in a container & more predictive
     signal handling.
     """
-    #Prepare execve(2) arguments
     if executable in ["dogecoind", "dogecoin-qt"]:
         executable_args.append("-printtoconsole")
-
-    executable_path = shutil.which(executable)
-    execve_args = [executable_path] + executable_args
 
     #Switch process from root to user.
     #Equivalent to use gosu or su-exec
@@ -128,11 +127,15 @@ def run_executable(executable, executable_args):
     os.setgid(user_info.pw_gid)
     os.setuid(user_info.pw_uid)
 
-    #Run process and remove environment by security.
-    os.execve(executable_path, execve_args, os.environ)
+    #Run container command
+    execute(executable, executable_args)
 
 if __name__ == "__main__":
-    executable = container_executable()
+    executable = sys.argv.pop(1)
+
+    #Container running arbitrary commands unrelated to dogecoin
+    if executable not in CLI_EXECUTABLES:
+        execute(executable, sys.argv[1:])
 
     create_datadir()
 
