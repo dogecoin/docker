@@ -131,7 +131,10 @@ def run_executable(executable, executable_args):
     execute(executable, executable_args)
 
 if __name__ == "__main__":
-    executable = sys.argv.pop(1)
+    if sys.argv[1].startswith("-"):
+        executable = "dogecoind"
+    else:
+        executable = sys.argv.pop(1)
 
     #Container running arbitrary commands unrelated to dogecoin
     if executable not in CLI_EXECUTABLES:
