@@ -15,7 +15,7 @@ CLI_EXECUTABLES = [
         "dogecoin-tx",
         ]
 
-def execute(exectuable, args):
+def execute(executable, args):
     """
     Run container command with execve(2). Use manually execve
     to run the process as same pid and avoid to fork a child.
