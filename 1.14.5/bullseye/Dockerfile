@@ -1,9 +1,9 @@
-FROM ubuntu:bionic AS verify
+FROM debian:bullseye-slim AS verify
 
 WORKDIR /verify
 
 # Specify release variables
-ARG RLS_VERSION=1.14.4
+ARG RLS_VERSION=1.14.5
 ARG RLS_OS=linux
 ARG RLS_LIB=gnu
 ARG RLS_ARCH=
@@ -27,10 +27,10 @@ ARG REPO_GITIAN_SIGS=https://github.com/dogecoin/gitian.sigs.git
 ARG REPO_DOGECOIN_CORE=https://github.com/dogecoin/dogecoin.git
 
 # Pinned known sha256sums
-RUN    echo 72ee42424835cdfb4111b284c98f78919b7a9ede6f8d509b2abe31f7b3eb1f09 dogecoin-1.14.4-aarch64-linux-gnu.tar.gz > SHASUMS \
-    && echo d023b7a6dfc5d92b1635f0fa03e14c9fc787a3eae94fba0cc3aca53b62a8e9ac dogecoin-1.14.4-arm-linux-gnueabihf.tar.gz >> SHASUMS \
-    && echo 6e93f5edccf528b44112f2088be3ac8f4f44151a757754da09c8c53cdd725815 dogecoin-1.14.4-i686-pc-linux-gnu.tar.gz >> SHASUMS \
-    && echo 6266235abe4bcbd41ea57bdf42f11ef89aa69f0386e8c8846d5228af69e7fa13 dogecoin-1.14.4-x86_64-linux-gnu.tar.gz >> SHASUMS
+RUN    echo f3bc387f393a0d55b6f653aef24febef6cb6f352fab2cbb0bae420bddcdacd1c  dogecoin-1.14.5-aarch64-linux-gnu.tar.gz > SHASUMS \
+    && echo dfdcdc6bb36076e7634cc8ed89138ec0383d73ba42b3e7ecfa9279b8949bce6b  dogecoin-1.14.5-arm-linux-gnueabihf.tar.gz >> SHASUMS \
+    && echo 7e7dd731ecfb2b78d6cc50d013ebf5faceeab50c59ffa2ab7551167b1bb81f08  dogecoin-1.14.5-i686-pc-linux-gnu.tar.gz >> SHASUMS \
+    && echo 17a03f019168ec5283947ea6fbf1a073c1d185ea9edacc2b91f360e1c191428e  dogecoin-1.14.5-x86_64-linux-gnu.tar.gz >> SHASUMS
 
 # install system requirements
 RUN apt update && apt install -y \
@@ -55,7 +55,7 @@ RUN RLS_FILE_NAME=$(cat .filename) \
     && grep ${RLS_FILE_NAME} SHASUMS | sha256sum -c \
     && mv ${RLS_FILE_NAME} dogecoin.tar.gz
 
-FROM ubuntu:bionic AS final
+FROM debian:bullseye-slim AS final
 
 ENV USER=dogecoin
 ENV DATADIR=/${USER}/.dogecoin
