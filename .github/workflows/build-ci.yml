@@ -1,0 +1,69 @@
+name: build-ci
+
+on:
+  pull_request:
+    paths:
+      - "**/Dockerfile"
+      - "**/docker-entrypoint.py"
+      - "**/PLATFORMS"
+      - "tools/genmatrix.js"
+      - ".github/workflows/build-ci.yml"
+
+jobs:
+  gen-matrix:
+    name: generate-matrix
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Get changed files
+        id: get-changed-files
+        uses: jitterbit/get-changed-files@v1
+        with:
+          format: 'json'
+
+      - name: Generate testing matrix
+        uses: actions/github-script@v4.1
+        id: generator
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const script = require(`${process.env.GITHUB_WORKSPACE}/tools/genmatrix.js`)
+            return script(process.env.GITHUB_WORKSPACE, ${{ steps.get-changed-files.outputs.all }});
+    outputs:
+      matrix: ${{ steps.generator.outputs.result }}
+
+  build:
+    if: ${{ fromJson(needs.gen-matrix.outputs.matrix) }}
+    needs: gen-matrix
+    name: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.gen-matrix.outputs.matrix) }}
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build image
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          push: false
+          load: true
+          platforms: ${{ matrix.platform }}
+          context: ./${{ matrix.version }}/${{ matrix.variant }}
+          file: ./${{ matrix.version }}/${{ matrix.variant }}/Dockerfile
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
