@@ -84,8 +84,8 @@ RUN tar -xvf dogecoin.tar.gz --strip-components=1 \
     && chmod 4555 /usr/local/bin/dogecoin* \
     && rm -rf *
 
-COPY docker-entrypoint.py /usr/local/bin/docker-entrypoint
-RUN chmod 500 /usr/local/bin/docker-entrypoint
+COPY entrypoint.py /usr/local/bin/entrypoint.py
+RUN chmod 500 /usr/local/bin/entrypoint.py
 
 WORKDIR ${HOME}
 
@@ -97,5 +97,5 @@ EXPOSE 22555 44555 18332
 
 VOLUME ["/dogecoin/.dogecoin"]
 
-ENTRYPOINT ["docker-entrypoint"]
+ENTRYPOINT ["entrypoint.py"]
 CMD ["dogecoind"]
