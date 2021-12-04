@@ -25,7 +25,7 @@ def execute(executable, args):
     executable_path = shutil.which(executable)
 
     if executable_path is None:
-        print(f"{sys.argv[0]}: {executable} not found.")
+        print(f"{sys.argv[0]}: {executable} not found.", file=sys.stderr)
         sys.exit(1)
 
     #Prepare execve args & launch container command
