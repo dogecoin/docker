@@ -130,7 +130,7 @@ def run_executable(executable, executable_args):
     #Run container command
     execute(executable, executable_args)
 
-if __name__ == "__main__":
+def main():
     if sys.argv[1].startswith("-"):
         executable = "dogecoind"
     else:
@@ -146,3 +146,6 @@ if __name__ == "__main__":
     executable_args += sys.argv[1:]
 
     run_executable(executable, executable_args)
+
+if __name__ == "__main__":
+    main()
