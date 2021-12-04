@@ -98,3 +98,4 @@ EXPOSE 22555 44555 18332
 VOLUME ["/dogecoin/.dogecoin"]
 
 ENTRYPOINT ["docker-entrypoint"]
+CMD ["dogecoind"]
