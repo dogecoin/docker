@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-
+"""
+  Docker entrypoint for Dogecoin Core
+"""
 import argparse
 import os
 import pwd
@@ -23,7 +25,8 @@ def execute(executable, args):
     executable_path = shutil.which(executable)
 
     if executable_path is None:
-        exit(f"{sys.argv[0]}: {executable} not found.")
+        print(f"{sys.argv[0]}: {executable} not found.")
+        sys.exit(1)
 
     #Prepare execve args & launch container command
     execve_args = [executable_path] + args
@@ -47,7 +50,7 @@ def executable_options(executable):
     man_folder = "/usr/share/man/man1"
     man_file = os.path.join(man_folder, f"{executable}.1")
 
-    with open(man_file, "r") as man_filestream:
+    with open(man_file, "r", encoding="utf-8") as man_filestream:
         man_content = man_filestream.read()
 
     # Regex to match single option entry in man(1) page
@@ -77,7 +80,7 @@ def create_datadir():
     os.makedirs(datadir, exist_ok=True)
 
     user = os.environ["USER"]
-    subprocess.run(["chown", "-R", f"{user}:{user}", datadir])
+    subprocess.run(["chown", "-R", f"{user}:{user}", datadir], check=True)
 
 def convert_env(executable):
     """
@@ -131,6 +134,9 @@ def run_executable(executable, executable_args):
     execute(executable, executable_args)
 
 def main():
+    """
+    Main routine
+    """
     if sys.argv[1].startswith("-"):
         executable = "dogecoind"
     else:
