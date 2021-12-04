@@ -99,7 +99,7 @@ def convert_env(executable):
 
     cli_arguments = []
     for option in man_options:
-        env_option = os.environ.get(option_to_env(option))
+        env_option = os.environ.pop(option_to_env(option), None)
 
         if env_option is not None:
             cli_option = "-" + option
