@@ -26,11 +26,11 @@ def execute(executable, args):
 
     if executable_path is None:
         print(f"{sys.argv[0]}: {executable} not found.", file=sys.stderr)
-        sys.exit(1)
+        return 1
 
     #Prepare execve args & launch container command
     execve_args = [executable_path] + args
-    os.execve(executable_path, execve_args, os.environ)
+    return os.execve(executable_path, execve_args, os.environ)
 
 def characters_cleaner(raw_option):
     """
@@ -131,7 +131,7 @@ def run_executable(executable, executable_args):
     os.setuid(user_info.pw_uid)
 
     #Run container command
-    execute(executable, executable_args)
+    return execute(executable, executable_args)
 
 def main():
     """
@@ -144,14 +144,14 @@ def main():
 
     #Container running arbitrary commands unrelated to dogecoin
     if executable not in CLI_EXECUTABLES:
-        execute(executable, sys.argv[1:])
+        return execute(executable, sys.argv[1:])
 
     create_datadir()
 
     executable_args = convert_env(executable)
     executable_args += sys.argv[1:]
 
-    run_executable(executable, executable_args)
+    return run_executable(executable, executable_args)
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
