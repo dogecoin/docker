@@ -6,7 +6,9 @@ const fs = require('fs');
 // we want to make decisions based on these changing
 const CI_FILES = [
   '.github/workflows/build-ci.yml',
-  'tools/genmatrix.js'
+  'tools/genmatrix.js',
+  'tests/integration',
+  'tests/integration_runner.py',
 ];
 
 // Regular expression for detecting version numbering of Dogecoin Core
@@ -128,6 +130,13 @@ class MatrixBuilder {
 
 }
 
+// Checks if any of the CI files have been changed
+const checkCIFilesChanged = (changedFiles) => {
+  return CI_FILES.some(file => changedFiles.some(changedFile => {
+    return changedFile.match(new RegExp(file));
+  }));
+}
+
 const generateMatrix = (baseDir, changedFiles) => {
 
   const builder = new MatrixBuilder(baseDir);
@@ -136,8 +145,9 @@ const generateMatrix = (baseDir, changedFiles) => {
   builder.readMatrix();
 
   // If the CI has changed, test all builds, otherwise, just build what's changed
-  const ciHasChanged = CI_FILES.some(file => changedFiles.indexOf(file) !== -1);
-  if (!ciHasChanged) {
+  if (checkCIFilesChanged(changedFiles)) {
+    console.log("CI files have changed, running all builds!");
+  } else {
     builder.filterIncludedVariants(changedFiles);
   }
 

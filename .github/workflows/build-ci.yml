@@ -4,8 +4,9 @@ on:
   pull_request:
     paths:
       - "**/Dockerfile"
-      - "**/docker-entrypoint.py"
+      - "**/entrypoint.py"
       - "**/PLATFORMS"
+      - "tests/"
       - "tools/genmatrix.js"
       - ".github/workflows/build-ci.yml"
 
@@ -38,6 +39,8 @@ jobs:
     if: ${{ fromJson(needs.gen-matrix.outputs.matrix) }}
     needs: gen-matrix
     name: build
+    env:
+      image_tag: local/ci:${{ github.run_id }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
@@ -62,8 +65,16 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           push: false
           load: true
+          tags: ${{ env.image_tag }}
           platforms: ${{ matrix.platform }}
           context: ./${{ matrix.version }}/${{ matrix.variant }}
           file: ./${{ matrix.version }}/${{ matrix.variant }}/Dockerfile
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Run integration tests
+        run: |
+          python3 -m tests.integration_runner \
+                  --platform ${{ matrix.platform }} \
+                  --image ${{ env.image_tag }} \
+                  --version ${{ matrix.version }}
