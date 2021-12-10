@@ -8,7 +8,7 @@ const CI_FILES = [
   '.github/workflows/build-ci.yml',
   'tools/genmatrix.js',
   'tests/integration',
-  'tests/integration_runner.py',
+  'tests/integration_runner.py'
 ];
 
 // Regular expression for detecting version numbering of Dogecoin Core
@@ -17,33 +17,32 @@ const VERSION_DIR_RE = /^\d+\.\d+\.\d+$/;
 
 // Entry in the matrix, resistant to red and blue pills
 class MatrixEntry {
-  constructor(version, variant, platform) {
+  constructor (version, variant, platform) {
     this.version = version;
     this.variant = variant;
     this.platform = platform;
   }
 
   // returns the relative path to the version/variant as string
-  path() {
+  path () {
     return path.join(this.version, this.variant);
   }
 
   // prints the entry to console
-  print() {
+  print () {
     console.log(this.version, this.variant, this.platform);
   }
 }
 
 // Build a GH Actions matrix
 class MatrixBuilder {
-
-  constructor(baseDir) {
+  constructor (baseDir) {
     this.baseDir = baseDir;
     this.matrix = [];
   }
 
   // read a build matrix from the repository's directory hieararchy
-  readMatrix() {
+  readMatrix () {
     // [1] read the versions from the repository root
     const versions = this.readAllVersions();
     if (!Array.isArray(versions) || versions.length < 1) {
@@ -77,14 +76,14 @@ class MatrixBuilder {
 
   // read all subdirectories inside a given directory
   // returns array of DirEnt objects
-  readDirs(fromDir) {
+  readDirs (fromDir) {
     const files = fs.readdirSync(fromDir, { withFileTypes: true });
     return files.filter(file => file.isDirectory());
   }
 
   // read all the version directories in the builder's baseDir
   // returns array of filename strings
-  readAllVersions() {
+  readAllVersions () {
     const dirs = this.readDirs(this.baseDir);
     const versionDirs = dirs.filter(dir => dir.name.match(VERSION_DIR_RE));
     return versionDirs.map(dir => dir.name);
@@ -92,7 +91,7 @@ class MatrixBuilder {
 
   // read all variants for a specific version
   // returns array of filename strings
-  readVariantsForVersion(version) {
+  readVariantsForVersion (version) {
     const fromDir = path.resolve(this.baseDir, version);
     const dirs = this.readDirs(fromDir);
     return dirs.map(dir => dir.name);
@@ -100,7 +99,7 @@ class MatrixBuilder {
 
   // read all platforms for a specific version
   // returns array of architecture strings, eg ["linux/amd64", "linux/arm64"]
-  readPlatformsForVersionVariant(version, variant) {
+  readPlatformsForVersionVariant (version, variant) {
     const pathToPlatformFile = path.resolve(this.baseDir, version, variant, 'PLATFORMS');
 
     if (!fs.existsSync(pathToPlatformFile)) {
@@ -111,12 +110,12 @@ class MatrixBuilder {
     const platforms = contents.split('\n');
 
     return platforms
-      .map(platform => platform.trim())     // remove whitespace just in case
+      .map(platform => platform.trim()) // remove whitespace just in case
       .filter(platform => platform !== ''); // remove empty string entries
   }
 
   // filters the matrix against an array of files
-  filterIncludedVariants(fileList) {
+  filterIncludedVariants (fileList) {
     this.matrix = this.matrix.filter(entry => {
       const matchRegex = new RegExp(entry.path());
       return fileList.some(file => file.match(matchRegex));
@@ -124,10 +123,9 @@ class MatrixBuilder {
   }
 
   // output the expected GH Actions format
-  build() {
+  build () {
     return this.matrix.length > 0 ? { include: this.matrix } : null;
   }
-
 }
 
 // Checks if any of the CI files have been changed
@@ -135,10 +133,9 @@ const checkCIFilesChanged = (changedFiles) => {
   return CI_FILES.some(file => changedFiles.some(changedFile => {
     return changedFile.match(new RegExp(file));
   }));
-}
+};
 
 const generateMatrix = (baseDir, changedFiles) => {
-
   const builder = new MatrixBuilder(baseDir);
 
   // populate the matrix with all builds
@@ -146,7 +143,7 @@ const generateMatrix = (baseDir, changedFiles) => {
 
   // If the CI has changed, test all builds, otherwise, just build what's changed
   if (checkCIFilesChanged(changedFiles)) {
-    console.log("CI files have changed, running all builds!");
+    console.log('CI files have changed, running all builds!');
   } else {
     builder.filterIncludedVariants(changedFiles);
   }
