@@ -72,8 +72,7 @@ COPY --from=verify /verify/dogecoin.tar.gz ./
 # Move downloaded binaries and man pages in the container system.
 # Setuid on binaries with $USER rights, to limit root usage.
 RUN tar -xvf dogecoin.tar.gz --strip-components=1 \
-    && cp share/man/man1/*.1 /usr/share/man/man1 \
-    && cp bin/dogecoin* /usr/local/bin \
+    && cp bin/dogecoind bin/dogecoin-cli bin/dogecoin-tx /usr/local/bin/ \
     && chown ${USER}:${USER} /usr/local/bin/dogecoin* \
     && chmod 4555 /usr/local/bin/dogecoin* \
     && rm -rf *

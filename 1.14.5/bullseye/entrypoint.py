@@ -11,7 +11,6 @@ import subprocess
 
 CLI_EXECUTABLES = [
         "dogecoind",
-        "dogecoin-qt",
         "dogecoin-cli",
         "dogecoin-tx",
         ]
@@ -53,7 +52,7 @@ def executable_options(executable):
     command_arguments = [executable, "-help"]
 
     #`-help-debug` display extra flag in help menu for dogecoind & qt
-    if executable in ["dogecoind", "dogecoin-qt"]:
+    if executable == "dogecoind":
         command_arguments.append("-help-debug")
 
     help_options = get_help(command_arguments)
@@ -127,7 +126,7 @@ def run_executable(executable, executable_args):
     to manage a single process in a container & more predictive
     signal handling.
     """
-    if executable in ["dogecoind", "dogecoin-qt"]:
+    if executable == "dogecoind":
         executable_args.append("-printtoconsole")
 
     #Switch process from root to user.
