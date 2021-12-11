@@ -8,7 +8,6 @@ import pwd
 import shutil
 import sys
 import subprocess
-import re
 
 CLI_EXECUTABLES = [
         "dogecoind",
@@ -32,35 +31,42 @@ def execute(executable, args):
     execve_args = [executable_path] + args
     return os.execve(executable_path, execve_args, os.environ)
 
-def characters_cleaner(raw_option):
-    """
-    Remove a selection of characters for each extracted option of
-    the executable man page.
-    """
-    char_to_remove = ["\\", "="]
-    for char in char_to_remove:
-        raw_option = raw_option.replace(char, "")
-    return raw_option
+def get_help(command_arguments):
+    """Call any dogecoin executable help menu, retrieve its options"""
+    #Prepare menu call & grep command to pipe in a shell
+    menu_command = " ".join(command_arguments)
+    grep_command = "grep -E '^  -[a-z]+'"
+
+    #Return a list of raw options of `-help` output
+    return subprocess.check_output(
+            f"{menu_command} | {grep_command}",
+            shell=True
+            ).decode("utf8").splitlines()
 
 def executable_options(executable):
     """
-    Retrieve available options for container executable, using
-    it's raw man page.
+    Retrieve available options of a dogecoin executable using help menu.
+
+    Call executable with `-help` flag and parse output to detect available
+    Dogecoin Core options.
     """
-    man_folder = "/usr/share/man/man1"
-    man_file = os.path.join(man_folder, f"{executable}.1")
+    command_arguments = [executable, "-help"]
 
-    with open(man_file, "r", encoding="utf-8") as man_filestream:
-        man_content = man_filestream.read()
+    #`-help-debug` display extra flag in help menu for dogecoind & qt
+    if executable in ["dogecoind", "dogecoin-qt"]:
+        command_arguments.append("-help-debug")
 
-    # Regex to match single option entry in man(1) page
-    # Option entry is near .HP and .IP man tag
-    option_regex = r".HP\n\\fB\\-(.*)=?\\fR"
-    option_list = re.findall(option_regex, man_content)
+    help_options = get_help(command_arguments)
 
-    # Remove few unexpected characters from man page
-    cleaned_option = map(characters_cleaner, option_list)
-    return list(cleaned_option)
+    #Clean raw option from the menu, keeping only variable name.
+    #For example, convert `  -rpcpassword=<pw>` in `rpcpassword`.
+    options = []
+    for option_entry in help_options:
+        cleaned_option = option_entry.strip().split("=")[0]
+        cleaned_option = cleaned_option.replace("-", "", 1)
+        options.append(cleaned_option)
+
+    return options
 
 def create_datadir():
     """
