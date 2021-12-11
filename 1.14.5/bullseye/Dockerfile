@@ -53,7 +53,10 @@ RUN RLS_FILE_NAME=$(cat .filename) \
        | grep OK | shuf -n 1 | sed s/:.*// > random_signer.txt \
     && grep ${RLS_FILE_NAME} sigs/${SIG_PATH}/$(cat random_signer.txt)/*assert | sha256sum -c \
     && grep ${RLS_FILE_NAME} SHASUMS | sha256sum -c \
-    && mv ${RLS_FILE_NAME} dogecoin.tar.gz
+    && tar -xzf ${RLS_FILE_NAME} \
+    --wildcards "*/dogecoin*" \
+    --strip-components=1 \
+    --one-top-level=dogecoin
 
 FROM debian:bullseye-slim AS final
 
@@ -70,24 +73,14 @@ RUN apt update && apt install -y \
     python3 \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /tmp
-
-# Copy the downloaded binary from the verify stage
-COPY --from=verify /verify/dogecoin.tar.gz ./
-
-# Move downloaded binaries and man pages in the container system.
-# Setuid on binaries with $USER rights, to limit root usage.
-RUN tar -xvf dogecoin.tar.gz --strip-components=1 \
-    && cp share/man/man1/*.1 /usr/share/man/man1 \
-    && cp bin/dogecoin* /usr/local/bin \
-    && chown ${USER}:${USER} /usr/local/bin/dogecoin* \
-    && chmod 4555 /usr/local/bin/dogecoin* \
-    && rm -rf *
-
-COPY entrypoint.py /usr/local/bin/entrypoint.py
-RUN chmod 500 /usr/local/bin/entrypoint.py
-
 WORKDIR ${HOME}
+# Copy the downloaded binaries and man pages into the container system from the verify stage.
+# Setuid on binaries with $USER rights, to limit root usage.
+COPY --from=verify /verify/dogecoin/share/man/man1/*.1 /usr/share/man/man1/
+
+COPY --from=verify --chown=${USER}:${USER} --chmod=4555 /verify/dogecoin/bin/dogecoin* /usr/local/bin/
+
+COPY --chmod=500 entrypoint.py /usr/local/bin/entrypoint.py
 
 # P2P network (mainnet, testnet & regnet respectively)
 EXPOSE 22556 44556 18444
