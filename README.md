@@ -42,7 +42,7 @@ docker logs dogecoin-node
 
 Call the JSON-RPC API using the `dogecoin-cli` present inside the container. The help menu will display all existing commands of the API:
 ```bash
-docker exec (--user dogecoin ??) dogecoin-node dogecoin-cli help
+docker exec dogecoin-node dogecoin-cli help
 ```
 
 ## Syntax & Configuration
