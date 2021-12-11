@@ -1,0 +1,26 @@
+{
+    "1.14.5": {
+        "arches" : {
+            "amd64" : {
+                "file" : "dogecoin-1.14.5-x86_64-linux-gnu.tar.gz",
+                "shasum" : "17a03f019168ec5283947ea6fbf1a073c1d185ea9edacc2b91f360e1c191428e"
+            },
+            "386" : {
+                "file" : "dogecoin-1.14.5-i686-pc-linux-gnu.tar.gz",
+                "shasum" : "7e7dd731ecfb2b78d6cc50d013ebf5faceeab50c59ffa2ab7551167b1bb81f08"
+            },
+            "arm/v7" : {
+                "file" : "dogecoin-1.14.5-arm-linux-gnueabihf.tar.gz",
+                "shasum" : "dfdcdc6bb36076e7634cc8ed89138ec0383d73ba42b3e7ecfa9279b8949bce6b"
+            },
+            "arm64" : {
+                "file" : "dogecoin-1.14.5-aarch64-linux-gnu.tar.gz",
+                "shasum" : "f3bc387f393a0d55b6f653aef24febef6cb6f352fab2cbb0bae420bddcdacd1c"
+            }
+        },
+        "variants": [
+            "bullseye-slim",
+            "buster-slim"
+        ]
+    }
+}
