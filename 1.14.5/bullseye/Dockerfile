@@ -47,13 +47,15 @@ RUN set -ex && ARCHITECTURE=$(dpkg --print-architecture) \
     && if [ "${ARCHITECTURE}" = "armhf" ]; then RLS_ARCH=arm && RLS_LIB=gnueabihf; fi \
     && if [ "${ARCHITECTURE}" = "i386" ]; then RLS_ARCH=i686-pc; fi \
     && if [ "${RLS_ARCH}" = "" ]; then echo "Could not determine architecture" >&2; exit 1; fi \
-    && RLS_FILE_NAME=dogecoin-${RLS_VERSION}-${RLS_ARCH}-${RLS_OS}-${RLS_LIB}.tar.gz \
-    && wget ${RLS_LOCATION}/${RLS_FILE_NAME} \
-    && gitian/bin/gverify --no-markup -d sigs -r ${SIG_PATH} ${DESCRIPTOR_PATH} \
-       | grep OK | shuf -n 1 | sed s/:.*// > random_signer.txt \
-    && grep ${RLS_FILE_NAME} sigs/${SIG_PATH}/$(cat random_signer.txt)/*assert | sha256sum -c \
-    && grep ${RLS_FILE_NAME} SHASUMS | sha256sum -c \
-    && mv ${RLS_FILE_NAME} dogecoin.tar.gz
+    && RLS_FILE_NAME="dogecoin-${RLS_VERSION}-${RLS_ARCH}-${RLS_OS}-${RLS_LIB}.tar.gz" \
+    && wget "${RLS_LOCATION}/${RLS_FILE_NAME}" \
+    && GITIAN_OUTPUT=$(gitian/bin/gverify --no-markup -d sigs -r "${SIG_PATH}" "${DESCRIPTOR_PATH}") \
+    && RANDOM_SIGNER=$(echo "${GITIAN_OUTPUT}" | grep OK | shuf -n 1 | sed s/:.*//) \
+    && if [ "${RANDOM_SIGNER}" = "" ]; then echo "No valid signers found" >&2; exit 1; fi \
+    && echo "Checking against signer: ${RANDOM_SIGNER}" \
+    && grep "${RLS_FILE_NAME}" sigs/"${SIG_PATH}"/"${RANDOM_SIGNER}"/*assert | sha256sum -c \
+    && grep "${RLS_FILE_NAME}" SHASUMS | sha256sum -c \
+    && mv "${RLS_FILE_NAME}" dogecoin.tar.gz
 
 FROM debian:bullseye-slim AS final
 
