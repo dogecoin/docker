@@ -37,7 +37,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 RUN git clone --depth 1 ${REPO_GITIAN_BUILDER} gitian \
     && git clone --depth 1 ${REPO_GITIAN_SIGS} sigs \
     && git clone --depth 1 -b v${RLS_VERSION} ${REPO_DOGECOIN_CORE} dogecoin \
-    && find dogecoin/contrib/gitian-keys -name "*.pgp" |xargs -n 1 gpg --import
+    && find dogecoin/contrib/gitian-keys -name "*.pgp" -exec gpg --import {} +
 
 # determine architecture, download release binary
 # and verify against random OK signer and pinned shasums
