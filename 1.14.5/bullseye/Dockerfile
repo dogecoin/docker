@@ -25,11 +25,12 @@ ARG DESCRIPTOR_PATH=dogecoin/contrib/gitian-descriptors/gitian-${RLS_OS}.yml
 ARG RLS_LOCATION=https://github.com/dogecoin/dogecoin/releases/download/v${RLS_VERSION}
 
 # install system requirements
-RUN apt update && apt install -y \
+RUN apt update && apt install --no-install-recommends -y \
     wget \
     git \
     ruby \
     gpg \
+    gpg-agent \
     && rm -rf /var/lib/apt/lists/*
 
 # fetch tools and setup signers
@@ -89,7 +90,7 @@ EXPOSE 22555 44555 18332
 VOLUME ["/dogecoin/.dogecoin"]
 
 # Dependencies install
-RUN apt update && apt install -y \
+RUN apt update && apt install --no-install-recommends -y \
     python3 \
     && rm -rf /var/lib/apt/lists/*
 
