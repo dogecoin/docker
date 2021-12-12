@@ -74,7 +74,6 @@ COPY --from=verify /verify/dogecoin.tar.gz ./
 # Setuid on binaries with $USER rights, to limit root usage.
 RUN tar -xvf dogecoin.tar.gz --strip-components=1 \
     && cp bin/dogecoind bin/dogecoin-cli bin/dogecoin-tx /usr/local/bin/ \
-    && chown ${USER}:${USER} /usr/local/bin/dogecoin* \
     && chmod 4555 /usr/local/bin/dogecoin* \
     && rm -rf *
 
