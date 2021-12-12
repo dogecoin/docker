@@ -1,0 +1,28 @@
+name: lint-py
+
+on:
+  push:
+    paths:
+      - "**/*.py"
+      - ".github/workflows/lint-py.yml"
+  pull_request:
+    paths:
+      - "**/*.py"
+      - ".github/workflows/lint-py.yml"
+
+jobs:
+  lint-py:
+    name: lint (python)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Install pylint
+        run: pip3 install pylint
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Run linter
+        run: find . -name "*.py" | xargs pylint

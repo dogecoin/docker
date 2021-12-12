@@ -1,0 +1,29 @@
+name: lint-js
+
+on:
+  push:
+    paths:
+      - "**/*.js"
+      - ".github/workflows/lint-js.yml"
+  pull_request:
+    paths:
+      - "**/*.js"
+      - ".github/workflows/lint-js.yml"
+
+jobs:
+  lint-js:
+    name: lint (javascript)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Install semistandard
+        run: |
+          npm install -g semistandard
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Run linter
+        run: find . -name "*.js" | xargs semistandard
