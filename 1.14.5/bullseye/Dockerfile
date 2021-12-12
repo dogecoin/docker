@@ -48,7 +48,7 @@ RUN set -ex && ARCHITECTURE=$(dpkg --print-architecture) \
     && if [ "${ARCHITECTURE}" = "i386" ]; then RLS_ARCH=i686-pc; fi \
     && if [ "${RLS_ARCH}" = "" ]; then echo "Could not determine architecture" >&2; exit 1; fi \
     && RLS_FILE_NAME="dogecoin-${RLS_VERSION}-${RLS_ARCH}-${RLS_OS}-${RLS_LIB}.tar.gz" \
-    && wget "${RLS_LOCATION}/${RLS_FILE_NAME}" \
+    && wget -q --show-progress --progress=bar:force:noscroll "${RLS_LOCATION}/${RLS_FILE_NAME}" \
     && GITIAN_OUTPUT=$(gitian/bin/gverify --no-markup -d sigs -r "${SIG_PATH}" "${DESCRIPTOR_PATH}") \
     && RANDOM_SIGNER=$(echo "${GITIAN_OUTPUT}" | grep OK | shuf -n 1 | sed s/:.*//) \
     && if [ "${RANDOM_SIGNER}" = "" ]; then echo "No valid signers found" >&2; exit 1; fi \
