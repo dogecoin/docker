@@ -118,6 +118,8 @@ services:
     ports:
       - 22555:22555
       - 22556:22556
+    volumes:
+      - ./datadir:/dogecoin/.dogecoin
 ```
 Then, run `docker compose up`.
 
