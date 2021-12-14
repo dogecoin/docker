@@ -13,7 +13,7 @@
 - **Maintained by the [Dogecoin community](https://github.com/dogecoin/docker/)**
 - **Docker Hub images:** https://hub.docker.com/r/dogecoin/dogecoin
 - **Dogecoin Core repository:** https://github.com/dogecoin/dogecoin
-- **Where to file issues:** https://github.com/dogecoin/docker/issues
+**Issue tracker:** https://github.com/dogecoin/docker/issues
 - **Supported architectures:** [...]
 
 ## What is this coin with a Doge on it ?
@@ -56,7 +56,11 @@ docker run  [docker-options] dogecoin/dogecoin [executable] [executable-options]
 + `executable` : Choose between `dogecoind`, `dogecoin-cli`, `dogecoin-tx` or `dogecoin-qt`. Default to `dogecoind`.  
 + `executable-options` : Pass options directly to the executable.
 
-There is three ways to configure the Dogecoin node. By using environment variables, by passing arguments to the executable or by providing `dogecoin.conf` in a volume.
+There are three ways to configure the Dogecoin node:
+
+1. by using environment variables,
+2. by passing arguments to the executable,
+3. by providing a `dogecoin.conf` in a volume.
 
 **To see all available configurations, see the `-help` menu from each executable:**
 ```bash
@@ -72,13 +76,16 @@ docker run dogecoin/dogecoin -paytxfee=0.01 -testnet
 
 ### Configure with environment variables
 
-All options for each executable can be defined with environment variables. Variables will be converted to executable arguments.
+All options, for each executable, can be defined with environment variables.
 
 ```bash
 docker run -e PAYTXFEE=0.01 -e TESTNET=1 dogecoin/dogecoin
 ```
-Environment variables represent executable arguments converted in upper case, and `-` to `_`.  
-For example, `-help-debug` will be `HELP_DEBUG`.
+Environment variables represent executable arguments converted into upper case, without leading hyphen (`-`). 
+Any hyphens inside an argument name must be converted to underscores (from `-`, to `_`.) 
+Note that boolean arguments require the value `1` assigned to the variable.
+
+For example, the `-help-debug` argument becomes `HELP_DEBUG=1` as environment variable.
 
 ### Configure with a configuration file
 
