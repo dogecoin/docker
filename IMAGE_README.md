@@ -111,7 +111,6 @@ version: '3.1'
 services:
   dogecoin:
     image: dogecoin/dogecoin
-    command: --default-authentication-plugin=mysql_native_password
     restart: always
     environment:
       PAYTXFEE: 0.01
