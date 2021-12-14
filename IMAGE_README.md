@@ -14,7 +14,7 @@
 - **Docker Hub images:** https://hub.docker.com/r/dogecoin/dogecoin
 - **Dogecoin Core repository:** https://github.com/dogecoin/dogecoin
 **Issue tracker:** https://github.com/dogecoin/docker/issues
-- **Supported architectures:** [...]
+- **Supported architectures:** `amd64`, `arm32v7`, `arm64v8`, `i386`
 
 ## What is this coin with a Doge on it ?
 
