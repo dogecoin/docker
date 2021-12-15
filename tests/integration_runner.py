@@ -41,6 +41,7 @@ class IntegrationRunner(TestRunner):
         #List of tests to run
         tests = [
             [ "version", [ "--version", self.options.version ] ],
+            [ "files_metadata", [] ],
         ]
 
         for test in tests:
