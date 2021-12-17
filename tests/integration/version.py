@@ -28,20 +28,20 @@ class VersionTest(TestRunner):
 
         # check dogecoind with only env
         dogecoind = self.run_command(["VERSION=1"], [])
-        self.ensure_version_on_first_line(dogecoind.stdout)
+        self.ensure_version_on_first_line(dogecoind)
 
         # check dogecoin-cli
         dogecoincli = self.run_command([], ["dogecoin-cli", "-?"])
-        self.ensure_version_on_first_line(dogecoincli.stdout)
+        self.ensure_version_on_first_line(dogecoincli)
 
         # check dogecoin-tx
         dogecointx = self.run_command([], ["dogecoin-tx", "-?"])
-        self.ensure_version_on_first_line(dogecointx.stdout)
+        self.ensure_version_on_first_line(dogecointx)
 
         # make sure that we find version errors
         caught_error = False
         try:
-            self.ensure_version_on_first_line("no version here".encode('utf-8'))
+            self.ensure_version_on_first_line("no version here")
         except AssertionError:
             caught_error = True
 
@@ -50,7 +50,7 @@ class VersionTest(TestRunner):
 
     def ensure_version_on_first_line(self, cmd_output):
         """Assert that the version is contained in the first line of output string"""
-        first_line = cmd_output.decode("utf-8").split("\n")[0]
+        first_line = cmd_output.split("\n")[0]
 
         if re.match(self.version_expr, first_line) is None:
             text = f"Could not find version { self.options.version } in { first_line }"
