@@ -14,7 +14,7 @@ ARG RLS_LIB=gnu
 ARG RLS_ARCH=
 
 # configure the shell before the first RUN
-SHELL ["/bin/bash", "-ex", "-c"]
+SHELL ["/bin/bash", "-ex", "-o", "pipefail", "-c"]
 
 # pin known sha256sums
 RUN    echo f3bc387f393a0d55b6f653aef24febef6cb6f352fab2cbb0bae420bddcdacd1c  dogecoin-1.14.5-aarch64-linux-gnu.tar.gz > SHASUMS \
@@ -52,7 +52,7 @@ RUN ARCHITECTURE=$(dpkg --print-architecture) \
     && if [ "${RLS_ARCH}" = "" ]; then echo "Could not determine architecture" >&2; exit 1; fi \
     && RLS_FILE_NAME="dogecoin-${RLS_VERSION}-${RLS_ARCH}-${RLS_OS}-${RLS_LIB}.tar.gz" \
     && wget -q --show-progress --progress=bar:force:noscroll "${RLS_LOCATION}/${RLS_FILE_NAME}" \
-    && GITIAN_OUTPUT=$(gitian/bin/gverify --no-markup -d sigs -r "${SIG_PATH}" "${DESCRIPTOR_PATH}") \
+    && GITIAN_OUTPUT=$(gitian/bin/gverify --no-markup -d sigs -r "${SIG_PATH}" "${DESCRIPTOR_PATH}") || true \
     && RANDOM_SIGNER=$(echo "${GITIAN_OUTPUT}" | grep OK | shuf -n 1 | sed s/:.*//) \
     && if [ "${RANDOM_SIGNER}" = "" ]; then echo "No valid signers found" >&2; exit 1; fi \
     && echo "Checking against signer: ${RANDOM_SIGNER}" \
