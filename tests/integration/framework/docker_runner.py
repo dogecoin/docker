@@ -21,11 +21,15 @@ class DockerRunner:
         self._start()
 
     def execute(self, envs, args):
+        """Launch `docker exec` commands inside the background container"""
+        command = self._construct_command("exec", envs, args)
+        return self._shell(command)
+
+    def run(self, envs, args):
         """
-        Run our target docker image with a list of
-        environment variables and a list of arguments
+        Launch `docker run` commands to create a new container for each command
         """
-        command = self._construct_command(envs, args)
+        command = self._construct_command("run", envs, args)
         return self._shell(command)
 
     def __del__(self):
@@ -68,9 +72,9 @@ class DockerRunner:
 
         return result.stdout.decode("utf-8").strip()
 
-    def _construct_command(self, envs, args):
+    def _construct_command(self, docker_cmd, envs, args):
         """Construct a docker command with env and args"""
-        command = ["docker", "exec"]
+        command = ["docker", docker_cmd]
 
         for env in envs:
             command.append("-e")
