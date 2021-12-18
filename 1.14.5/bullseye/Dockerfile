@@ -13,6 +13,9 @@ ARG RLS_OS=linux
 ARG RLS_LIB=gnu
 ARG RLS_ARCH=
 
+# configure the shell before the first RUN
+SHELL ["/bin/bash", "-ex", "-c"]
+
 # pin known sha256sums
 RUN    echo f3bc387f393a0d55b6f653aef24febef6cb6f352fab2cbb0bae420bddcdacd1c  dogecoin-1.14.5-aarch64-linux-gnu.tar.gz > SHASUMS \
     && echo dfdcdc6bb36076e7634cc8ed89138ec0383d73ba42b3e7ecfa9279b8949bce6b  dogecoin-1.14.5-arm-linux-gnueabihf.tar.gz >> SHASUMS \
@@ -41,7 +44,7 @@ RUN git clone --depth 1 ${REPO_GITIAN_BUILDER} gitian \
 
 # determine architecture, download release binary
 # and verify against random OK signer and pinned shasums
-RUN set -ex && ARCHITECTURE=$(dpkg --print-architecture) \
+RUN ARCHITECTURE=$(dpkg --print-architecture) \
     && if [ "${ARCHITECTURE}" = "amd64" ]; then RLS_ARCH=x86_64 ; fi \
     && if [ "${ARCHITECTURE}" = "arm64" ]; then RLS_ARCH=aarch64; fi \
     && if [ "${ARCHITECTURE}" = "armhf" ]; then RLS_ARCH=arm && RLS_LIB=gnueabihf; fi \
