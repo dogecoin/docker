@@ -80,7 +80,13 @@ class DockerRunner:
             command.append("-e")
             command.append(env)
 
-        command.append(self.container_id)
+        # Use container or image depending on command type
+        if docker_cmd == "exec":
+            tag = self.container_id
+        elif docker_cmd == "run":
+            tag = self.image
+
+        command.append(tag)
 
         # Launch all shell commands using entrypoint.py only
         command.append("entrypoint.py")
