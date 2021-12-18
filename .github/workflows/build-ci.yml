@@ -6,7 +6,7 @@ on:
       - "**/Dockerfile"
       - "**/entrypoint.py"
       - "**/PLATFORMS"
-      - "tests/"
+      - "tests/**"
       - "tools/genmatrix.js"
       - ".github/workflows/build-ci.yml"
 
