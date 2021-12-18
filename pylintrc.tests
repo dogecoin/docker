@@ -1,0 +1,7 @@
+[tests-configuration]
+disable =   duplicate-code, # Tests having similar code
+            no-member,      # pytest global variables in conftest.py not detected
+            consider-using-with, # conftest temporary directory would need a with
+            import-error    # EntrypointHook unable to import entrypoint
+    
+    

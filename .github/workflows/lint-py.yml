@@ -24,5 +24,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Run linter
-        run: find . -name "*.py" | xargs pylint
+      - name: Run linter for images code
+        run: find . -name "*.py" ! -path "*/tests/*" | xargs pylint
+
+      - name: Install pylint dependencies for tests
+        run: pip3 install pytest
+
+      - name: Run linter for tests code
+        run: find "./tests" -name "*.py" | xargs pylint --rcfile=pylintrc.tests
