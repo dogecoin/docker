@@ -82,19 +82,16 @@ class DockerRunner:
 
         # Use container or image depending on command type
         if docker_cmd == "exec":
-            tag = self.container_id
+            # Use entrypoint.py to enter `docker exec`
+            command.extend([self.container_id, "entrypoint.py"])
+
+            # Need to add the default executable added by CMD not given by
+            # exec, entrypoint will crash without CMD default argument.
+            if len(args) == 0 or args[0].startswith("-"):
+                command.append("dogecoind")
+
         elif docker_cmd == "run":
-            tag = self.image
-
-        command.append(tag)
-
-        # Launch all shell commands using entrypoint.py only
-        command.append("entrypoint.py")
-
-        # Need to add a default executables added by CMD normally
-        if len(args) == 0 or args[0].startswith("-"):
-            command.append("dogecoind")
+            command.extend(["--platform", self.platform, self.image])
 
         command.extend(args)
-
         return command
