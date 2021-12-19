@@ -34,9 +34,7 @@ class DockerRunner:
         return self._shell(command)
 
     def run(self, envs, args):
-        """
-        Launch `docker run` commands to create a new container for each command
-        """
+        """Launch `docker run` commands, create a new container each time"""
         command = self._construct_command("run", envs, args)
         return self._shell(command)
 
