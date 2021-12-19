@@ -27,15 +27,15 @@ class VersionTest(TestRunner):
         self.version_expr = re.compile(f".*{ self.options.version }.*")
 
         # check dogecoind with only env
-        dogecoind = self.docker_exec(["VERSION=1"], [])
+        dogecoind = self.docker_run(["VERSION=1"], [])
         self.ensure_version_on_first_line(dogecoind)
 
         # check dogecoin-cli
-        dogecoincli = self.docker_exec([], ["dogecoin-cli", "-?"])
+        dogecoincli = self.docker_run([], ["dogecoin-cli", "-?"])
         self.ensure_version_on_first_line(dogecoincli)
 
         # check dogecoin-tx
-        dogecointx = self.docker_exec([], ["dogecoin-tx", "-?"])
+        dogecointx = self.docker_run([], ["dogecoin-tx", "-?"])
         self.ensure_version_on_first_line(dogecointx)
 
         # make sure that we find version errors
