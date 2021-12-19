@@ -50,7 +50,7 @@ class DockerRunner:
                 self.image,
                 "sleep", "infinity",
                 ]
-        self.container_id = self._shell(create_command, silent=True)
+        self.container_id = self._shell(create_command, silent=True)[:16]
 
     def _stop_background(self):
         """Remove background test container if used"""
