@@ -45,25 +45,14 @@ class DockerRunner:
         self._stop_background()
 
     def _start_background(self):
-        """
-        Launch a docker container. Done in 2 step using create + start.
-
-        Keep the container running with a shell open thanks to `--interactive`,
-        having stdin open keep the process running.
-        """
+        """Start a background container to run `exec` commands inside"""
         create_command = [
-                "docker", "create",
+                "docker", "run", "-d",
                 "--platform", self.platform,
-                "--interactive",
                 self.image,
-                "/bin/bash",
+                "sleep", "infinity",
                 ]
         self.container_id = self._shell(create_command, silent=True)
-
-        start_command = [
-                "docker", "start", self.container_id
-                ]
-        self._shell(start_command, silent=True)
 
     def _stop_background(self):
         """Remove background test container if used"""
