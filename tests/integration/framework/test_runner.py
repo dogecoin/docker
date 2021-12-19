@@ -15,8 +15,8 @@ class TestConfigurationError(Exception):
 class TestRunner:
     """Base class to define and run Dogecoin Core Docker tests with"""
     def __init__(self):
-        """Make sure there is an options object"""
         self.options = {}
+        self.docker_cli = None
 
     def add_options(self, parser):
         """Allow adding options in tests"""
@@ -25,15 +25,22 @@ class TestRunner:
         """Actual test, must be implemented by the final class"""
         raise NotImplementedError
 
-    def run_command(self, envs, args):
-        """Run a docker command with env and args"""
+    def docker_exec(self, envs, args):
+        """
+        Launch `docker exec` command, run command inside a background container.
+        Let execute mutliple instructions in the same container.
+        """
         assert self.options.platform is not None
         assert self.options.image is not None
 
-        runner = DockerRunner(self.options.platform,
-            self.options.image, self.options.verbose)
+        return self.docker_cli.execute(envs, args)
 
-        return runner.run_interactive_command(envs, args)
+    def docker_run(self, envs, args):
+        """Launch `docker run` command, create a new container for each run"""
+        assert self.options.platform is not None
+        assert self.options.image is not None
+
+        return self.docker_cli.run(envs, args)
 
     def main(self):
         """main loop"""
@@ -47,6 +54,9 @@ class TestRunner:
 
         self.add_options(parser)
         self.options = parser.parse_args()
+
+        self.docker_cli = DockerRunner(self.options.platform,
+                self.options.image, self.options.verbose)
 
         self.run_test()
         print("Tests successful")
