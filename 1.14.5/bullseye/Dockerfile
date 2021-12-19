@@ -13,6 +13,9 @@ ARG RLS_OS=linux
 ARG RLS_LIB=gnu
 ARG RLS_ARCH=
 
+# configure the shell before the first RUN
+SHELL ["/bin/bash", "-ex", "-o", "pipefail", "-c"]
+
 # pin known sha256sums
 RUN    echo f3bc387f393a0d55b6f653aef24febef6cb6f352fab2cbb0bae420bddcdacd1c  dogecoin-1.14.5-aarch64-linux-gnu.tar.gz > SHASUMS \
     && echo dfdcdc6bb36076e7634cc8ed89138ec0383d73ba42b3e7ecfa9279b8949bce6b  dogecoin-1.14.5-arm-linux-gnueabihf.tar.gz >> SHASUMS \
@@ -37,23 +40,25 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 RUN git clone --depth 1 ${REPO_GITIAN_BUILDER} gitian \
     && git clone --depth 1 ${REPO_GITIAN_SIGS} sigs \
     && git clone --depth 1 -b v${RLS_VERSION} ${REPO_DOGECOIN_CORE} dogecoin \
-    && find dogecoin/contrib/gitian-keys -name "*.pgp" |xargs -n 1 gpg --import
+    && find dogecoin/contrib/gitian-keys -name "*.pgp" -exec gpg --import {} +
 
 # determine architecture, download release binary
 # and verify against random OK signer and pinned shasums
-RUN set -ex && ARCHITECTURE=$(dpkg --print-architecture) \
+RUN ARCHITECTURE=$(dpkg --print-architecture) \
     && if [ "${ARCHITECTURE}" = "amd64" ]; then RLS_ARCH=x86_64 ; fi \
     && if [ "${ARCHITECTURE}" = "arm64" ]; then RLS_ARCH=aarch64; fi \
     && if [ "${ARCHITECTURE}" = "armhf" ]; then RLS_ARCH=arm && RLS_LIB=gnueabihf; fi \
     && if [ "${ARCHITECTURE}" = "i386" ]; then RLS_ARCH=i686-pc; fi \
     && if [ "${RLS_ARCH}" = "" ]; then echo "Could not determine architecture" >&2; exit 1; fi \
-    && RLS_FILE_NAME=dogecoin-${RLS_VERSION}-${RLS_ARCH}-${RLS_OS}-${RLS_LIB}.tar.gz \
-    && wget ${RLS_LOCATION}/${RLS_FILE_NAME} \
-    && gitian/bin/gverify --no-markup -d sigs -r ${SIG_PATH} ${DESCRIPTOR_PATH} \
-       | grep OK | shuf -n 1 | sed s/:.*// > random_signer.txt \
-    && grep ${RLS_FILE_NAME} sigs/${SIG_PATH}/$(cat random_signer.txt)/*assert | sha256sum -c \
-    && grep ${RLS_FILE_NAME} SHASUMS | sha256sum -c \
-    && mv ${RLS_FILE_NAME} dogecoin.tar.gz
+    && RLS_FILE_NAME="dogecoin-${RLS_VERSION}-${RLS_ARCH}-${RLS_OS}-${RLS_LIB}.tar.gz" \
+    && wget -q --show-progress --progress=bar:force:noscroll "${RLS_LOCATION}/${RLS_FILE_NAME}" \
+    && GITIAN_OUTPUT=$(gitian/bin/gverify --no-markup -d sigs -r "${SIG_PATH}" "${DESCRIPTOR_PATH}") || true \
+    && RANDOM_SIGNER=$(echo "${GITIAN_OUTPUT}" | grep OK | shuf -n 1 | sed s/:.*//) \
+    && if [ "${RANDOM_SIGNER}" = "" ]; then echo "No valid signers found" >&2; exit 1; fi \
+    && echo "Checking against signer: ${RANDOM_SIGNER}" \
+    && grep "${RLS_FILE_NAME}" sigs/"${SIG_PATH}"/"${RANDOM_SIGNER}"/*assert | sha256sum -c \
+    && grep "${RLS_FILE_NAME}" SHASUMS | sha256sum -c \
+    && mv "${RLS_FILE_NAME}" dogecoin.tar.gz
 
 FROM debian:bullseye-slim AS final
 
@@ -76,7 +81,7 @@ RUN tar -xvf dogecoin.tar.gz --strip-components=1 \
     && cp bin/dogecoind bin/dogecoin-cli bin/dogecoin-tx /usr/local/bin/ \
     && chown ${USER}:${USER} /usr/local/bin/dogecoin* \
     && chmod 4555 /usr/local/bin/dogecoin* \
-    && rm -rf *
+    && rm -rf -- *
 
 WORKDIR ${HOME}
 
