@@ -8,20 +8,28 @@ import subprocess
 import sys
 
 class DockerRunner:
-    """Run a docker container in background to execute testing commands"""
+    """
+    Interface with the Docker cli to build & launch `docker run` and
+    `docker exec` commands.
 
+    - `docker run` is used for a one shot container.
+    - `docker exec` enable a test to use the same background container for
+      multiples commands, launched automatically at first exec instruction.
+    """
     def __init__(self, platform, image, verbose):
         """Sets platform and image for all tests ran with this instance"""
         self.platform = platform
         self.image = image
         self.verbose = verbose
+        #Background container for `docker exec`
         self.container_id = None
-
-        # Launch the container
-        self._start()
 
     def execute(self, envs, args):
         """Launch `docker exec` commands inside the background container"""
+        # Create background container if not existing on first exec command
+        if self.container_id is None:
+            self._start_background()
+
         command = self._construct_command("exec", envs, args)
         return self._shell(command)
 
@@ -33,11 +41,10 @@ class DockerRunner:
         return self._shell(command)
 
     def __del__(self):
-        """Remove test container"""
-        stop_command = ["docker", "rm", "-f", self.container_id]
-        self._shell(stop_command, silent=True)
+        """Clean up background container if enabled"""
+        self._stop_background()
 
-    def _start(self):
+    def _start_background(self):
         """
         Launch a docker container. Done in 2 step using create + start.
 
@@ -57,6 +64,12 @@ class DockerRunner:
                 "docker", "start", self.container_id
                 ]
         self._shell(start_command, silent=True)
+
+    def _stop_background(self):
+        """Remove background test container if used"""
+        stop_command = ["docker", "rm", "-f", self.container_id]
+        if self.container_id:
+            self._shell(stop_command, silent=True)
 
     def _shell(self, command, silent=False):
         """Run an arbitrary shell command and return its output"""

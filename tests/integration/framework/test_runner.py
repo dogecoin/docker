@@ -16,7 +16,7 @@ class TestRunner:
     """Base class to define and run Dogecoin Core Docker tests with"""
     def __init__(self):
         self.options = {}
-        self.container = None
+        self.docker_cli = None
 
     def add_options(self, parser):
         """Allow adding options in tests"""
@@ -33,14 +33,14 @@ class TestRunner:
         assert self.options.platform is not None
         assert self.options.image is not None
 
-        return self.container.execute(envs, args)
+        return self.docker_cli.execute(envs, args)
 
     def docker_run(self, envs, args):
         """Launch `docker run` command, create a new container for each run"""
         assert self.options.platform is not None
         assert self.options.image is not None
 
-        return self.container.run(envs, args)
+        return self.docker_cli.run(envs, args)
 
     def main(self):
         """main loop"""
@@ -55,7 +55,7 @@ class TestRunner:
         self.add_options(parser)
         self.options = parser.parse_args()
 
-        self.container = DockerRunner(self.options.platform,
+        self.docker_cli = DockerRunner(self.options.platform,
                 self.options.image, self.options.verbose)
 
         self.run_test()
