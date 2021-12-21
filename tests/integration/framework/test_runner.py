@@ -8,6 +8,7 @@ import argparse
 import sys
 
 from .docker_runner import DockerRunner
+from .container_file import ContainerFile
 
 class TestConfigurationError(Exception):
     """Raised when the test is configured inconsistently"""
@@ -34,6 +35,10 @@ class TestRunner:
             self.options.image, self.options.verbose)
 
         return runner.run_interactive_command(envs, args)
+
+    def container_file(self, filename):
+        """Retrieve metadata related to a file inside containers"""
+        return ContainerFile(filename, container_cli=self.run_command)
 
     def main(self):
         """main loop"""
