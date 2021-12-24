@@ -21,11 +21,7 @@ class Command:
     result or the input of a test.
     """
     def __init__(self, argv, environ):
-        # Sort cli arguments to facilitate comparaison
-        sorted_args = argv[1:]
-        sorted_args.sort()
-
-        self.argv = [argv[0]] + sorted_args
+        self.argv = argv
         self.environ = environ
 
     def __eq__(self, other):
