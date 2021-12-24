@@ -78,3 +78,16 @@ jobs:
                   --platform ${{ matrix.platform }} \
                   --image ${{ env.image_tag }} \
                   --version ${{ matrix.version }}
+
+      - name: Run unit tests of entrypoint
+        run: |
+          #Run tests from tests/unit in a container
+          echo "apt update && apt install -y python3-pip" >> pytest_setup
+          echo "pip3 install pytest" >> pytest_setup
+          echo "pytest --verbose" >> pytest_setup
+
+          docker run -i --platform ${{ matrix.platform }} \
+              --volume $(pwd)/tests/unit:/tests \
+              --workdir /tests \
+              --entrypoint /bin/bash \
+              ${{ env.image_tag }} < pytest_setup
