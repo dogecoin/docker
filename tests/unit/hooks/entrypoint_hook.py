@@ -41,13 +41,7 @@ class EntrypointHook:
     Disable some function related so file permissions & creation.
 
     See `self._setup_hooks` for all defined hooks.
-
-    Tests can runs from an host or from inside a container. Less hooks
-    are enable in containers, starting in CONTAINER_MODE.
     """
-    # Verify if tests run in a container to hook partially entrypoint functions
-    CONTAINER_MODE = os.path.exists("/.dockerenv")
-
     # Environment to use for every tests Command & comparison Command
     DEFAULT_ENV = {
         "USER" : os.environ["USER"],
@@ -136,34 +130,26 @@ class EntrypointHook:
         self._execve_backup = os.execve
         self._setgid_backup = os.setgid
         self._setuid_backup = os.setuid
-
-        # Save function hooked only on the host
         self._which_backup = shutil.which
         self._get_help_backup = entrypoint.get_help
 
         # Setup hooks
         # Add execve hook globally to catch entrypoint arguments
         os.execve = self._execve_hook
+        # Hook executables call to `-help` menus to fake options
+        entrypoint.get_help = self._get_help_hook
+
+        # which not working from host without dogecoin executables in PATH
+        shutil.which = lambda executable : f"/usr/local/bin/{executable}"
 
         # Disable setgid & setuid behavior
         os.setgid = lambda _ : None
         os.setuid = lambda _ : None
 
-        # Extra hooks to run tests from host, replace executables availability
-        if self.CONTAINER_MODE is False:
-            # which not working from host without dogecoin executables in PATH
-            shutil.which = lambda executable : f"/usr/local/bin/{executable}"
-
-            # Hook executables call to `-help` menus to fake options
-            entrypoint.get_help = self._get_help_hook
-
     def reset_hooks(self):
         """Restore hooks of `self._setup_hooks` to initial functions"""
-        # Global hooks for container and host mode
         os.execve = self._execve_backup
         os.setgid = self._setgid_backup
         os.setuid = self._setuid_backup
-
-        # Hooks specifics to host
         shutil.which = self._which_backup
         entrypoint.get_help = self._get_help_backup
