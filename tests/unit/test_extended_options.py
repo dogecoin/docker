@@ -19,9 +19,9 @@ def test_extended_options(hook):
     result_args = [
             pytest.abs_path("dogecoind"),
             f"-datadir={pytest.datadir}",
-            "-regtest=1",
             "-sendfreetransactions",
             "-checkblocks=420",
+            "-regtest=1",
             "-printtoconsole",
             ]
     result_env = {}

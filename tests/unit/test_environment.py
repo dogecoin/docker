@@ -21,8 +21,8 @@ def test_environment(hook):
     result_args = [
             pytest.abs_path("dogecoind"),
             f"-datadir={pytest.datadir}",
-            "-paytxfee=0.01",
             "-maxconnections=150",
+            "-paytxfee=0.01",
             "-printtoconsole",
             ]
     result_env = {}

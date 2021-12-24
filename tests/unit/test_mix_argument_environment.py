@@ -15,9 +15,9 @@ def test_mixing_argument_and_env(hook):
     result_args = [
             pytest.abs_path("dogecoind"),
             f"-datadir={pytest.datadir}",
+            "-testnet",
             "-maxconnections=150",
             "-daemon",
-            "-testnet",
             "-printtoconsole",
             ]
     result_env = {}
@@ -35,10 +35,10 @@ def test_equal_argv_and_env(hook):
 
     result_args = [
             pytest.abs_path("dogecoind"),
+            "-daemon",
             f"-datadir={pytest.datadir}",
             "-maxconnections=150",
             "-maxconnections=150",
-            "-daemon",
             "-daemon",
             "-printtoconsole",
             ]
@@ -56,11 +56,11 @@ def test_equal_argv_and_env(hook):
 
     result_args = [
             pytest.abs_path("dogecoind"),
-            f"-datadir={pytest.datadir}",
-            "-maxconnections=130",
-            "-maxconnections=150",
-            "-daemon",
             "-daemon=1",
+            f"-datadir={pytest.datadir}",
+            "-maxconnections=150",
+            "-maxconnections=130",
+            "-daemon",
             "-printtoconsole",
             ]
     result_env = {}
